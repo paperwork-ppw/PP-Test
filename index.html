@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> QR CODE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://fastly.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module">
+        import promptpayQr from 'https://fastly.jsdelivr.net/npm/promptpay-qr@0.5.0/+esm'
+        window.promptpayQr = promptpayQr
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #000, #8b0000);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0px 0px 15px rgba(255, 0, 0, 0.5);
+        }
+        .qr-box {
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #promptpay-qr-img {
+            width: 100%;
+            max-width: 250px;
+            margin-top: 10px;
+        }
+        .footer {
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: left;
+        }
+        .input-amount {
+            width: 100%;
+            border: 2px solid #003366;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+        .input-amount:focus {
+            border-color: #0055AA;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 85, 170, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://img2.pic.in.th/pic/1000008216.jpg" alt="คิวอาร์โค้ด" width="230">
+  <br>
+  <br>
+    <h5 class="text-dark">สแกนจ่ายผ่าน QR Code</h5>
+    
+    <input type="number" id="amount" class="input-amount my-2" placeholder="กรุณาระบุจำนวนเงิน" min="0">
+    
+    <div class="qr-box">
+        <img id="promptpay-qr-img" src="" alt=" PromptPay">
+    </div>
+
+    <button class="btn btn-primary w-100 mt-3" id="alert-save">📢 ขั้นตอนการใช้งาน</button>
+
+    <div class="footer">
+        <small>ชื่อบัญชี : นรินทร์ภัทร มีชัย</small><br>
+        <small>หมายเลขพร้อมเพย์ : 0123××××89</small> 
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(() => {
+        let phoneNumber = "0123456789"; // หมายเลขพร้อมเพย์ ได้ทุกพร้อมเพย์ ธนาคาร และ วอลเล็ต
+        updateQRCode(0);
+
+        $('#amount').on('input', () => {
+            let amount = $('#amount').val() ? Number($('#amount').val()) : 0;
+            updateQRCode(amount);
+        });
+
+        $('#alert-save').on('click', () => {
+            Swal.fire({
+                title: "📢 ขั้นตอนทำรายการ",
+                html: `
+                    <ul style="text-align: left; font-size: 14px; line-height: 2;">
+                       <li> <b>กรอกจำนวนเงินที่ต้องการชำระ</b></li>
+                       <li> <b>แคปภาพหน้าจอเพื่อบันทึก QR Code ชำระเงิน</b></li>
+                       <li> <b>ตรวจสอบความถูกต้องก่อนกดยืนยัน</b></li>
+                       <li> <b>ชำระเงินแล้ว แจ้งสลิปที่ไลน์ทุกครั้ง! </b></li>
+                       <li> <b>ขอบคุณที่ชำระค่าบริการของเราค่ะ</b></li>
+                    </ul>
+                `,
+                icon: "info",
+                showConfirmButton: true,
+                confirmButtonColor: "#d33",
+                confirmButtonText: "รับทราบ",
+                background: "black",
+                color: "white",
+                timer: 80000,
+                timerProgressBar: true,
+                showClass: {
+                    popup: "animate__animated animate__zoomIn"
+                },
+                hideClass: {
+                    popup: "animate__animated animate__zoomOut"
+                }
+            });
+        });
+
+        function updateQRCode(amount) {
+            let qrData = promptpayQr(phoneNumber, {amount: amount});
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=500x500&margin=10`;
+            $('#promptpay-qr-img').attr('src', qrUrl);
+        }
+
+        // ฟังก์ชันตรวจจับการคลิกขวาและคัดลอก
+        $(document).on('contextmenu', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'ERROR!',
+                text: 'ไม่อนุญาตให้คลิกขวาหรือคัดลอกที่หน้าเว็ปนี้!',
+                background: 'black',
+                color: 'white'
+            });
+        });
+
+        $(document).on('copy', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'ERROR!',
+                text: 'ไม่อนุญาตให้คลิกขวาหรือคัดลอกที่หน้าเว็ปนี้!',
+                background: 'black',
+                color: 'white'
+            });
+        });
+    });
+</script>
+
+</body>
+  </html>
